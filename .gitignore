@@ -16,3 +16,11 @@ node_modules
 
 # Typescript build
 dist
+
+# firejail
+.inputrc
+.bashrc
+.npm
+
+# Docker compose volumes
+.mongo

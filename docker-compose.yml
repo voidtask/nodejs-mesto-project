@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: docker.io/mongo
+    container_name: mongo
+    restart: unless-stopped
+    volumes:
+      - ./.mongo:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: qwerty12345
+      MONGO_INITDB_DATABASE: mestodb
+    ports:
+      - "27017:27017"
+    networks:
+      - mongodb_network
+
+volumes: {}
+
+networks:
+  mongodb_network:
+    driver: bridge
+    name: mongo-network
