@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { IUser } from "./user.interface";
 import { z } from "zod";
 
 export const UserSchema = z.object({
@@ -8,7 +7,9 @@ export const UserSchema = z.object({
   avatar: z.url(),
 });
 
-const userMongooseSchema = new mongoose.Schema<IUser>({
+export type TUser = z.infer<typeof UserSchema>;
+
+const userMongooseSchema = new mongoose.Schema<TUser>({
   name: {
     type: String,
     validate: {
@@ -30,4 +31,4 @@ const userMongooseSchema = new mongoose.Schema<IUser>({
   },
 });
 
-export const userModel = mongoose.model<IUser>("user", userMongooseSchema);
+export const userModel = mongoose.model("user", userMongooseSchema);
