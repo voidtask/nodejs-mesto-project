@@ -1,8 +1,4 @@
 import { AppError } from "./_app-error";
 
-export const NotFound = (reason?: string): AppError => {
-  return {
-    status: 404,
-    reason,
-  };
-};
+export const NotFound = (message?: string): AppError =>
+  new AppError(404, message ?? "Not Found");

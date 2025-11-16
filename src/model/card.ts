@@ -1,20 +1,21 @@
 import mongoose from "mongoose";
 import z from "zod";
-import { ICard } from "./card.interface";
+import { CardSchema } from "../schemas/card";
 
-const cardSchema = new mongoose.Schema<ICard>({
+type TCard = z.infer<typeof CardSchema>;
+
+const cardSchema = new mongoose.Schema<TCard>({
   name: {
     type: String,
-    minlength: 2,
-    maxlength: 30,
     required: true,
+    validate: (value: unknown) =>
+      CardSchema.shape.name.safeParse(value).success,
   },
   link: {
     type: String,
     required: true,
-    validate: (value: unknown) => {
-      return z.url().safeParse(value).success;
-    },
+    validate: (value: unknown) =>
+      CardSchema.shape.link.safeParse(value).success,
   },
   createdAt: {
     type: mongoose.Schema.Types.Date,
@@ -31,4 +32,4 @@ const cardSchema = new mongoose.Schema<ICard>({
   },
 });
 
-export default mongoose.model<ICard>("card", cardSchema);
+export const cardModel = mongoose.model<TCard>("card", cardSchema);

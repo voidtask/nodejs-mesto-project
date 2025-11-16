@@ -1,12 +1,8 @@
-import z from "zod";
+export class AppError extends Error {
+  public readonly status: number;
 
-export const AppErrorSchema = z.object({
-  reason: z.string().optional(),
-  status: z.number(),
-});
-
-export type AppError = z.infer<typeof AppErrorSchema>;
-
-export const isAppError = (value: unknown): value is AppError => {
-  return AppErrorSchema.safeParse(value).success;
-};
+  constructor(status: number, message?: string) {
+    super(message);
+    this.status = status;
+  }
+}

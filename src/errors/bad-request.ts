@@ -1,8 +1,4 @@
 import { AppError } from "./_app-error";
 
-export const BadRequest = (reason?: string): AppError => {
-  return {
-    status: 400,
-    reason,
-  };
-};
+export const BadRequest = (message?: string): AppError =>
+  new AppError(400, message ?? "Bad Request");

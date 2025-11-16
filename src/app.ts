@@ -1,6 +1,10 @@
+/* eslint-disable no-console */
 import express, { NextFunction, Request, Response } from "express";
 import mongoose from "mongoose";
+import { errorHandler } from "./middlewares/error-handler";
+import { cardsRoute } from "./routes/cards";
 import { usersRoute } from "./routes/users";
+import { setInContext } from "./utils/request-context";
 
 const app = express();
 
@@ -12,18 +16,22 @@ mongoose
   )
   .then(() => {
     console.log("MongoDB connection established");
+  })
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
   });
 
 app.use((req: Request, res: Response, next: NextFunction) => {
-  // @ts-ignore
-  req.user = {
-    _id: "69175cae96828521ff8d235c",
-  };
-
+  setInContext(req, "userId", "69175cae96828521ff8d235c");
   next();
 });
 
 app.use("/users", usersRoute);
+app.use("/cards", cardsRoute);
+
+// App's error handler must always be the last .use() call
+app.use(errorHandler);
 
 app.listen(3000, () => {
   console.log("Express listening on port :3000");

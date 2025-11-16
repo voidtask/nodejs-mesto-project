@@ -1,30 +1,31 @@
+import { RequestHandler } from "express";
+import mongoose from "mongoose";
 import { BadRequest } from "../errors/bad-request";
 import { NotFound } from "../errors/not-found";
-import { RequestHandler } from "express";
-import { userModel, UserSchema } from "../model/user";
-import mongoose from "mongoose";
+import { userModel } from "../model/user";
+import { UserSchema } from "../schemas/user";
+import { getFromContext, requireFromContext } from "../utils/request-context";
 
 export const getUserById: RequestHandler = async (req, res, next) => {
-  const _id = req.params.id;
-
   try {
-    if (!mongoose.isValidObjectId(_id)) {
+    const targetUserId = req.params.id;
+    if (!mongoose.isValidObjectId(targetUserId)) {
       throw BadRequest("Invalid ID");
     }
 
-    const user = await userModel.findById(_id);
-    if (!user) {
+    const targetUser = await userModel.findById(targetUserId);
+    if (!targetUser) {
       throw NotFound("User not found");
     }
 
     const payload = {
-      id: String(user._id),
-      name: user.name,
-      about: user.about,
-      avatar: user.avatar,
+      id: String(targetUser._id),
+      name: targetUser.name,
+      about: targetUser.about,
+      avatar: targetUser.avatar,
     };
 
-    return res.status(200).json(payload);
+    res.status(200).json(payload);
   } catch (err) {
     next(err);
   }
@@ -33,11 +34,14 @@ export const getUserById: RequestHandler = async (req, res, next) => {
 export const getUsers: RequestHandler = async (_req, res, next) => {
   try {
     const users = await userModel.find({});
-    const payload = users.map(({ _id, name, about, avatar }) => {
-      return { id: String(_id), name, about, avatar };
-    });
+    const payload = users.map(({ _id, name, about, avatar }) => ({
+      id: String(_id),
+      name,
+      about,
+      avatar,
+    }));
 
-    return res.status(200).json(payload);
+    res.status(200).json(payload);
   } catch (err) {
     next(err);
   }
@@ -45,7 +49,11 @@ export const getUsers: RequestHandler = async (_req, res, next) => {
 
 export const createUser: RequestHandler = async (req, res, next) => {
   try {
-    const reqPayload = UserSchema.parse(req.body);
+    const reqPayload = UserSchema.pick({
+      name: true,
+      about: true,
+      avatar: true,
+    }).parse(req.body);
 
     const createdUser = await userModel.create({
       name: reqPayload.name,
@@ -60,7 +68,67 @@ export const createUser: RequestHandler = async (req, res, next) => {
       avatar: createdUser.avatar,
     };
 
-    return res.status(201).json(payload);
+    res.status(200).json(payload);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updateUserInfo: RequestHandler = async (req, res, next) => {
+  try {
+    const currentUserId = requireFromContext<string>(req, "userId");
+
+    const { name, about } = UserSchema.pick({ name: true, about: true })
+      .partial()
+      .parse(req.body);
+
+    const updatedUser = await userModel.findByIdAndUpdate(
+      currentUserId,
+      { $set: { name, about } },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
+      throw NotFound("User with provided ID not found");
+    }
+
+    const payload = {
+      id: String(updatedUser._id),
+      name: updatedUser.name,
+      about: updatedUser.about,
+      avatar: updatedUser.avatar,
+    };
+
+    res.status(200).json(payload);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updateUserAvatar: RequestHandler = async (req, res, next) => {
+  try {
+    const currentUserId = getFromContext(req, "userId");
+
+    const { avatar } = UserSchema.pick({ avatar: true }).parse(req.body);
+
+    const updatedUser = await userModel.findByIdAndUpdate(
+      currentUserId,
+      { $set: { avatar } },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
+      throw NotFound("User with provided ID not found");
+    }
+
+    const payload = {
+      id: String(updatedUser._id),
+      name: updatedUser.name,
+      about: updatedUser.about,
+      avatar: updatedUser.avatar,
+    };
+
+    res.status(200).json(payload);
   } catch (err) {
     next(err);
   }
