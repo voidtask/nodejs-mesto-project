@@ -19,6 +19,8 @@
     "import/extensions": [".js", ".ts"]
   },
   "rules": {
+    "import/prefer-default-export": "off",
+    "implicit-arrow-linebreak": "off", // conflicts with prettier
     "linebreak-style": "off",
     "comma-dangle": "off",
     "object-curly-newline": "off",
@@ -31,6 +33,14 @@
       {
         "js": "never",
         "ts": "never"
+      }
+    ],
+    "no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_"
       }
     ]
   }
