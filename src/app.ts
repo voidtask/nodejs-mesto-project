@@ -5,6 +5,7 @@ import { errorHandler } from "./middlewares/error-handler";
 import { cardsRoute } from "./routes/cards";
 import { usersRoute } from "./routes/users";
 import { setInContext } from "./utils/request-context";
+import { NotFound } from "./errors/not-found";
 
 const app = express();
 
@@ -12,7 +13,7 @@ app.use(express.json());
 
 mongoose
   .connect(
-    "mongodb://admin:qwerty12345@127.0.0.1:27017/mestodb?authSource=admin",
+    "mongodb://admin:qwerty12345@127.0.0.1:27017/mestodb?authSource=admin"
   )
   .then(() => {
     console.log("MongoDB connection established");
@@ -29,6 +30,10 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 app.use("/users", usersRoute);
 app.use("/cards", cardsRoute);
+
+app.use("*", () => {
+  throw NotFound();
+});
 
 // App's error handler must always be the last .use() call
 app.use(errorHandler);
