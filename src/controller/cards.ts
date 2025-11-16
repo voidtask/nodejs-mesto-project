@@ -55,7 +55,7 @@ export const createCard: RequestHandler = async (req, res, next) => {
       owner: String(createdCard.owner._id),
     };
 
-    res.status(200).json(payload);
+    res.status(201).json(payload);
   } catch (err) {
     next(err);
   }

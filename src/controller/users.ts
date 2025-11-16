@@ -68,7 +68,7 @@ export const createUser: RequestHandler = async (req, res, next) => {
       avatar: createdUser.avatar,
     };
 
-    res.status(200).json(payload);
+    res.status(201).json(payload);
   } catch (err) {
     next(err);
   }
