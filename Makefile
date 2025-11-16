@@ -32,3 +32,6 @@ audit:
 
 outdated:
 	$(NPM) outdated
+
+lint:
+	$(NPM) run lint $(ARGS)
