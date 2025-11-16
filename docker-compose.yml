@@ -16,6 +16,24 @@ services:
     networks:
       - mongodb_network
 
+  mongo-express:
+    image: docker.io/mongo-express:latest
+    container_name: mongo-express
+    restart: always
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: qwerty12345
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_MONGODB_SERVER: "mongo"
+      ME_CONFIG_BASICAUTH_USERNAME: user
+      ME_CONFIG_BASICAUTH_PASSWORD: qwerty12345
+    ports:
+      - 8081:8081
+    networks:
+      - mongodb_network
+    depends_on:
+      - mongo
+
 volumes: {}
 
 networks:
