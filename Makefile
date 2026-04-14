@@ -1,28 +1,34 @@
 SHELL = /bin/bash
 
-before_date := $(shell date -d "20 days ago" +"%Y-%m-%d")
+override PWD = $(shell pwd)
+override PROJ_DIR = $(shell pwd | xargs basename)
 
-override JAIL := firejail --seccomp --noroot --nosound --novideo --no3d --caps.drop=all --hostname=develop --private=./
-override NPM  := $(JAIL) npm
+override JAIL := firejail --seccomp --private=./ --noroot --nosound --novideo --no3d --caps.drop=all --hostname=develop
+override DENO := $(JAIL) deno
+override NPM := $(JAIL) npm
+
 
 # Linux commands
-install:
-	$(NPM) install --before $(before_date)
-
-add:
-	$(NPM) install --before $(before_date) $(ARGS)
-
-remove:
-	$(NPM) remove $(ARGS)
+config_ls:
+	$(NPM) config ls
 
 ci:
 	$(NPM) ci
 
-dev:
-	$(NPM) run dev -- $(ARGS)
+install:
+	$(NPM) install
 
-start:
-	$(NPM) start
+add:
+	$(NPM) install $(ARGS)
+
+remove:
+	$(NPM) remove $(ARGS)
+
+dev:
+	$(NPM) run dev
+
+dev-proxychain:
+	$(JAIL) proxychains npm run dev
 
 build:
 	$(NPM) run build
@@ -34,4 +40,4 @@ outdated:
 	$(NPM) outdated
 
 lint:
-	$(NPM) run lint $(ARGS)
+	$(NPM) run lint
