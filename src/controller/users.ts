@@ -1,14 +1,17 @@
 import { RequestHandler } from "express";
 import mongoose from "mongoose";
-import { BadRequest } from "../errors/bad-request";
-import { NotFound } from "../errors/not-found";
+import { BadRequest, NotFound } from "../errors";
 import { userModel } from "../model/user";
 import { UserSchema } from "../schemas/user";
 import { getFromContext, requireFromContext } from "../utils/request-context";
 
 export const getUserById: RequestHandler = async (req, res, next) => {
   try {
-    const targetUserId = req.params.id;
+    let targetUserId = req.params.id;
+    if (targetUserId === "me") {
+      targetUserId = requireFromContext<string>(req, "userId");
+    }
+
     if (!mongoose.isValidObjectId(targetUserId)) {
       throw BadRequest("Invalid ID");
     }
@@ -19,7 +22,8 @@ export const getUserById: RequestHandler = async (req, res, next) => {
     }
 
     const payload = {
-      id: String(targetUser._id),
+      _id: String(targetUser._id),
+      email: targetUser.email,
       name: targetUser.name,
       about: targetUser.about,
       avatar: targetUser.avatar,
@@ -34,8 +38,9 @@ export const getUserById: RequestHandler = async (req, res, next) => {
 export const getUsers: RequestHandler = async (_req, res, next) => {
   try {
     const users = await userModel.find({});
-    const payload = users.map(({ _id, name, about, avatar }) => ({
-      id: String(_id),
+    const payload = users.map(({ _id, email, name, about, avatar }) => ({
+      _id: String(_id),
+      email,
       name,
       about,
       avatar,
@@ -47,45 +52,16 @@ export const getUsers: RequestHandler = async (_req, res, next) => {
   }
 };
 
-export const createUser: RequestHandler = async (req, res, next) => {
-  try {
-    const reqPayload = UserSchema.pick({
-      name: true,
-      about: true,
-      avatar: true,
-    }).parse(req.body);
-
-    const createdUser = await userModel.create({
-      name: reqPayload.name,
-      about: reqPayload.about,
-      avatar: reqPayload.avatar,
-    });
-
-    const payload = {
-      id: String(createdUser._id),
-      name: createdUser.name,
-      about: createdUser.about,
-      avatar: createdUser.avatar,
-    };
-
-    res.status(201).json(payload);
-  } catch (err) {
-    next(err);
-  }
-};
-
 export const updateUserInfo: RequestHandler = async (req, res, next) => {
   try {
     const currentUserId = requireFromContext<string>(req, "userId");
 
-    const { name, about } = UserSchema.pick({ name: true, about: true })
-      .partial()
-      .parse(req.body);
+    const { name, about } = UserSchema.pick({ name: true, about: true }).partial().parse(req.body);
 
     const updatedUser = await userModel.findByIdAndUpdate(
       currentUserId,
       { $set: { name, about } },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     if (!updatedUser) {
@@ -93,7 +69,7 @@ export const updateUserInfo: RequestHandler = async (req, res, next) => {
     }
 
     const payload = {
-      id: String(updatedUser._id),
+      _id: String(updatedUser._id),
       name: updatedUser.name,
       about: updatedUser.about,
       avatar: updatedUser.avatar,
@@ -114,7 +90,7 @@ export const updateUserAvatar: RequestHandler = async (req, res, next) => {
     const updatedUser = await userModel.findByIdAndUpdate(
       currentUserId,
       { $set: { avatar } },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     if (!updatedUser) {
@@ -122,7 +98,7 @@ export const updateUserAvatar: RequestHandler = async (req, res, next) => {
     }
 
     const payload = {
-      id: String(updatedUser._id),
+      _id: String(updatedUser._id),
       name: updatedUser.name,
       about: updatedUser.about,
       avatar: updatedUser.avatar,

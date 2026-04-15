@@ -30,8 +30,8 @@ dev:
 dev-proxychain:
 	$(JAIL) proxychains npm run dev
 
-build:
-	$(NPM) run build
+start:
+	$(NPM) run start
 
 audit:
 	$(NPM) audit
@@ -39,5 +39,3 @@ audit:
 outdated:
 	$(NPM) outdated
 
-lint:
-	$(NPM) run lint

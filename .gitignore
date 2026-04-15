@@ -24,3 +24,6 @@ dist
 
 # Docker compose volumes
 .mongo
+
+# Secrets
+.env

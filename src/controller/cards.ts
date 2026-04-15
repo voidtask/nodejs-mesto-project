@@ -1,26 +1,22 @@
 import { RequestHandler } from "express";
 import mongoose from "mongoose";
 import z from "zod";
-import { BadRequest } from "../errors/bad-request";
+import { BadRequest, NotFound, Forbidden } from "../errors";
 import { cardModel } from "../model/card";
-import { NotFound } from "../errors/not-found";
-import { Forbidden } from "../errors/forbidden";
 import { requireFromContext } from "../utils/request-context";
 
 export const getCards: RequestHandler = async (_req, res, next) => {
   try {
     const cards = await cardModel.find({});
 
-    const payload = cards.map(
-      ({ _id, name, createdAt, owner, likes, link }) => ({
-        id: String(_id),
-        name,
-        createdAt: createdAt.toISOString(),
-        owner: String(owner),
-        likes: likes.map((entry) => String(entry)),
-        link,
-      })
-    );
+    const payload = cards.map(({ _id, name, createdAt, owner, likes, link }) => ({
+      _id: String(_id),
+      name,
+      createdAt: createdAt.toISOString(),
+      owner: String(owner),
+      likes: likes.map((entry) => String(entry)),
+      link,
+    }));
 
     res.status(200).json(payload);
   } catch (err) {
@@ -47,7 +43,7 @@ export const createCard: RequestHandler = async (req, res, next) => {
     });
 
     const payload = {
-      id: String(createdCard._id),
+      _id: String(createdCard._id),
       name: createdCard.name,
       link: createdCard.link,
       createdAt: createdCard.createdAt.toISOString(),
@@ -97,7 +93,7 @@ export const likeCardById: RequestHandler = async (req, res, next) => {
     const likedCard = await cardModel.findByIdAndUpdate(
       cardId,
       { $addToSet: { likes: reqUserId } },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     if (!likedCard) {
@@ -105,7 +101,7 @@ export const likeCardById: RequestHandler = async (req, res, next) => {
     }
 
     const payload = {
-      id: String(likedCard._id),
+      _id: String(likedCard._id),
       name: likedCard.name,
       link: likedCard.link,
       owner: String(likedCard.owner),
@@ -129,7 +125,7 @@ export const unlikeCardById: RequestHandler = async (req, res, next) => {
     const unlikedCard = await cardModel.findByIdAndUpdate(
       cardId,
       { $pull: { likes: reqUserId } },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     if (!unlikedCard) {
@@ -137,7 +133,7 @@ export const unlikeCardById: RequestHandler = async (req, res, next) => {
     }
 
     const payload = {
-      id: String(unlikedCard._id),
+      _id: String(unlikedCard._id),
       name: unlikedCard.name,
       link: unlikedCard.link,
       createdAt: unlikedCard.createdAt,

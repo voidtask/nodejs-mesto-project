@@ -1,13 +1,10 @@
 import { Router } from "express";
-import {
-  createCard,
-  deleteCardById,
-  getCards,
-  likeCardById,
-  unlikeCardById,
-} from "../controller/cards";
+import { createCard, deleteCardById, getCards, likeCardById, unlikeCardById } from "../controller/cards";
+import { requireAuth } from "../middlewares/auth";
 
 const route = Router();
+
+route.use(requireAuth);
 
 route.get("/", getCards);
 route.post("/", createCard);
