@@ -35,12 +35,11 @@ export const signup: RequestHandler = async (req, res, next) => {
 
     res.status(201).json(payload);
   } catch (err) {
-    next(err)
-    // if (err && typeof err === "object" && "code" in err && err.code === 11000) {
-    //   next(Conflict("This email was taken."));
-    // } else {
-    //   next(err);
-    // }
+    if (err && typeof err === "object" && "code" in err && err.code === 11000) {
+      next(Conflict("This email was taken."));
+    } else {
+      next(err);
+    }
   }
 };
 
